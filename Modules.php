@@ -12,7 +12,7 @@ final class Modules {
 	private static $instances = array();
 	private static $includePath = '';
 
-	public static function importModule($name) {
+	public static function import($name) {
 		if(array_key_exists($name, self::$instances)) {
 			return self::$instances[$name];
 		} else if(array_key_exists($name, self::$modules)) {
@@ -27,7 +27,7 @@ final class Modules {
 		}
 	}
 
-	public static function registerModule($name, $path) {
+	public static function register($name, $path) {
 		self::$modules[$name] = $path;
 	}
 
