@@ -1,10 +1,42 @@
 <?php
-class CallableStdClass {
+class PropertyContainer {
+	private $params = array();
+
 	public function __call($method, $args) {
-        if(is_callable(array($this, $method))) {
-            return call_user_func_array($this->$method, $args);
+        if(array_key_exists($method, $this->params)) {
+            return call_user_func_array($this->params[$method], $args);
         }
     }
+
+    public function __set($key, $value) {
+    	$this->params[$key] = $value;
+    }
+
+    public function __get($key) {
+    	return $this->params[$key];
+    }
+}
+
+class Module extends PropertyContainer {
+	private $fullPath = null;
+	private $exports = null;
+	private $args = null;
+	
+	public function __construct($fullPath, $args) {
+		$this->fullPath = $fullPath;
+		$this->args = $args;
+	}
+
+	public function getExports() {
+		if($this->exports === null) {
+			$exports = new PropertyContainer();
+			$args = $this->args;
+			include($this->fullPath);
+			$this->exports = &$exports;
+		}
+
+		return $this->exports;
+	}
 }
 
 final class Modules {
@@ -13,15 +45,12 @@ final class Modules {
 	private static $includePath = '';
 
 	public static function import($name) {
-		if(array_key_exists($name, self::$instances)) {
-			return self::$instances[$name];
-		} else if(array_key_exists($name, self::$modules)) {
-			$exports = new CallableStdClass();
-			$private = new CallableStdClass();
+		if(array_key_exists($name, self::$modules)) {
+			if(!array_key_exists($name, self::$instances)) {
+				self::$instances[$name] = new Module(self::$includePath . '/' . self::$modules[$name], array_slice(func_get_args(), 1));
+			}
 
-			self::$instances[$name] = include(self::$includePath . '/' . self::$modules[$name]);
-
-			return self::$instances[$name];
+			return self::$instances[$name]->getExports();
 		} else {
 			throw new Exception('No such module!');
 		}

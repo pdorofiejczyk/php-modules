@@ -4,7 +4,10 @@ include(dirname(__FILE__) . '/../Modules.php');
 Modules::setIncludePath(dirname(__FILE__));
 Modules::register('Test', 'modules/testModule.php');
 
-$MyTestModule = Modules::import('Test');
+$MyTestModule = Modules::import('Test', 666, 'test arg');
 
-print_r($MyTestModule->y());
+echo $MyTestModule->getX() . "\n";
+$MyTestModule->setX(11);
+echo $MyTestModule->getX() . "\n";
+
 ?>

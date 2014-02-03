@@ -25,7 +25,7 @@ Importing modules
 
 ```
 $MyModuleX = Modules::import('X');
-$MyModuleY = Modules::import('Y');
+$MyModuleY = Modules::import('Y', 'argument 1', 'argument 2');
 ```
 
 Access to exposed data
@@ -40,31 +40,29 @@ Creating modules
 
 In this implementation module is simple php file which have their own scope but can expose some variables outside. You can use special objects inside your module:
 
-* $exports - contains all data which will be exposed oudside
-* $private - contains all private data for module
+* $exports (shortcut of $this->exports) - contains all data which will be exposed oudside
+* $this - contains all private data for module
+* $args (shortcut of $this->args) - array of arguments passed on module initialization
 
 To expose data, you have to put return statement at the end of your module file.
 
 Example module
 
 ```
-/**
- * this is our private function
- */
-$private->x = function() {
-	echo 'func x';
+list($u, $o) = $args; //mapping passed args to variables;
+
+$a = 66; //local non-shared var
+$this->x = 0; //module scope var, shared inside module
+
+$exports->setX = function($x) { //function exposed outside module
+	$this->x = $x; //you can access module scope by using $this
 };
 
-/**
- * this is public function but we want to have access 
- * to private data so we using "use" statement
- */
-$exports->y = function() use ($private) {
-	$private->x();
-	echo 'func y';
+$exports->getX = function() {
+	return $this->x;
 };
 
-return $exports; //exposing data outside
+$exports->z = 55; //variable exposed outside
 ```
 
 WARNING
